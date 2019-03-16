@@ -13,7 +13,7 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 CPPFLAGS ?= $(INC_FLAGS) -MMD -MP 
 
-LIBS ?= -lpthread
+LIBS ?= -lpthread -lwiringPi
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CC) $(OBJS) $(LIBS) -o $@ $(LDFLAGS)
