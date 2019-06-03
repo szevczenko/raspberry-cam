@@ -5,6 +5,7 @@
 #include <wiringPi.h>
 #include <softPwm.h>
 #include "cmd.h"
+#include "motor_pwm.h"
 
 #define test_errno(msg) do{if (errno) {perror(msg); exit(EXIT_FAILURE);}} while(0)
 
@@ -16,15 +17,6 @@ int main() {
 	size_t size = PTHREAD_STACK_MIN;
 	
 	init_pwm();
-	int pwm1;
-	while (1)
-	{
-		printf("podaj pwm:\n");
-		scanf("%d", &pwm1);
-		go_str(pwm1,pwm1);
-	}
-	//go_str(0,0);
-
 	pthread_mutexattr_init(&mutexattr);
 	pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
 	pthread_mutex_init(&mutex_client, &mutexattr);

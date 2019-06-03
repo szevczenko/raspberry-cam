@@ -1,0 +1,36 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/pi/project/raspberry-cam/test_Camera/test.cpp
+ctime
+-
+unistd.h
+-
+fstream
+-
+iostream
+-
+raspicam/raspicam.h
+-
+ctime
+-
+iostream
+-
+raspicam/raspicam_cv.h
+-
+
+/usr/local/include/raspicam/raspicam.h
+cstdio
+-
+string
+-
+raspicamtypes.h
+/usr/local/include/raspicam/raspicamtypes.h
+
+/usr/local/include/raspicam/raspicamtypes.h
+

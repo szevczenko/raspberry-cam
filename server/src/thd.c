@@ -152,7 +152,7 @@ void * listen_client(void * pv)
 		
 
 }
-
+/*
 void * doTelnet(void * pv)
 {
 	printf("do cmd start\n");
@@ -162,7 +162,7 @@ void * doTelnet(void * pv)
 		//printf("%s| len = %d\n",(char*)network.buffer, network.buff_len);
 		//for(uint8_t i = 0; i<network.buff_len; i++)
 		//	printf("%d",network.buffer[i]);
-		/*
+		
 		if (network.buffLenToDo[cmd] != 0)
 		{
 			printf("todo cmd %d;%d, list %d\n",network.buffer[0],network.buffer[1],network.buffLenToDo[cmd]);
@@ -170,8 +170,9 @@ void * doTelnet(void * pv)
 			cmd++;
 		}
 		
-		*/
+		
 		sleep(2);
 		
 	}
 } // doTelnet
+*/

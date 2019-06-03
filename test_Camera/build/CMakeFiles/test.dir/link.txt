@@ -1,0 +1,1 @@
+/usr/bin/c++      CMakeFiles/test.dir/test.cpp.o  -o test  -L/usr/local/lib -Wl,-rpath,/usr/local/lib:/opt/vc/lib -rdynamic /opt/vc/lib/libmmal_core.so /opt/vc/lib/libmmal_util.so /opt/vc/lib/libmmal.so -lraspicam 
