@@ -10,27 +10,36 @@ uint16_t bufferToDo[32];
 
 int init_client(void)
 {	
-    network.socket = socket(AF_INET, SOCK_STREAM, 0);
-	//network.socket = socket(AF_UNSPEC, SOCK_STREAM, IPPROTO_TCP);
+    network.socket_tcp = socket(AF_INET, SOCK_STREAM, 0);
+	if ( (network.socket_udp = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) { 
+        perror("socket creation failed"); 
+        exit(EXIT_FAILURE); 
+    } 
     network.servaddr.sin_family = AF_INET;
     network.servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     network.servaddr.sin_port = htons(PORT);
+	network.servaddr_udp.sin_family = AF_INET;
+    network.servaddr_udp.sin_addr.s_addr = htonl(INADDR_ANY);
+    network.servaddr_udp.sin_port = htons(PORT+1);
     network.count_clients = 0;
     network.clients = n_clients;
 	network.buffer = buffer_cmd;
-	/*
-	network.c_buffer->buff_len = 0;
-	network.c_buffer->LenToDo = bufferToDo;
-	network.c_buffer->pos = 0;
-	*/
-    int rc = bind(network.socket, (struct sockaddr *) &network.servaddr,sizeof(network.servaddr));
+
+    int rc = bind(network.socket_tcp, (struct sockaddr *) &network.servaddr,sizeof(network.servaddr));
     if(rc<0)
     {
         printf("bind error %d (%s)\n", errno, strerror(errno));
         return MSG_ERROR;
     }
 
-    rc = listen(network.socket, 5);
+	rc = bind(network.socket_udp, (struct sockaddr *) &network.servaddr_udp,sizeof(network.servaddr));
+    if(rc<0)
+    {
+        printf("udp bind error %d (%s)\n", errno, strerror(errno));
+        return MSG_ERROR;
+    }
+
+    rc = listen(network.socket_tcp, 5);
 	if (rc < 0) {
 		printf( "listen: %d (%s)\n", errno, strerror(errno));
 		return MSG_ERROR;
@@ -46,7 +55,7 @@ void * listen_client(void * pv)
 	socklen_t len = sizeof(network.servaddr);
 	fd_set set;
 	struct timeval timeout, time_select;
-	int rv, max_socket = network.socket;
+	int rv, max_socket = MAX_VALUE(network.socket_tcp, network.socket_udp);
 	uint8_t i, k;
     timeout.tv_sec = 0;
     timeout.tv_usec = 10000;
@@ -55,12 +64,13 @@ void * listen_client(void * pv)
     FD_ZERO(&set); // clear the set 
 	 // add our file descriptor to the set
 	uint8_t buffer[1024];
-	printf("start listen sock = %d\n", network.socket); 
+	printf("start listen sock = %d\n", network.socket_tcp); 
     while(1)
     {
 		time_select.tv_sec = 1;
 		//FD_ZERO(&set);
-		FD_SET(network.socket, &set);
+		FD_SET(network.socket_tcp, &set);
+		FD_SET(network.socket_udp, &set);
 
 		for (i = 0; i<network.count_clients; i++)
 		{
@@ -77,11 +87,11 @@ void * listen_client(void * pv)
 	    {
     	    //printf("timeout occurred (10 second) \n"); // a timeout occured 
 	    }
-	    else if (FD_ISSET( network.socket , &set) && rv>0) //Add client
+	    else if (FD_ISSET( network.socket_tcp , &set) && rv>0) //Add client
 	    {
             if (network.count_clients<NUMBER_CLIENT)
             {
-                rc = accept(network.socket, (struct sockaddr *)&network.servaddr, &len);
+                rc = accept(network.socket_tcp, (struct sockaddr *)&network.servaddr, &len);
 		        if (rc < 0) {
 			    printf( "accept: %d (%s)\n", errno, strerror(errno));
                 continue;
@@ -94,11 +104,17 @@ void * listen_client(void * pv)
             else
             {
                 printf("limit clients\n");
-                rc = accept(network.socket, (struct sockaddr *)&network.servaddr, &len);
+                rc = accept(network.socket_tcp, (struct sockaddr *)&network.servaddr, &len);
                 close(rc);
             }
 		    
 	    }
+		else if (FD_ISSET(network.socket_udp , &set) && rv>0)
+		{
+			//ssize_t len = read(network.clients[i].client_socket, (char *)buffer, sizeof(buffer));
+			len = recvfrom(network.socket_udp, (char *)buffer, MAXLINE,  0, 0,0); 
+			printf("UDP Receive: %s", buffer);
+		}
 		else if (rv>0)
 		{
 			for (i = 0; i<network.count_clients;i++) //recieve data from clients
@@ -113,12 +129,12 @@ void * listen_client(void * pv)
 				{
 					if (max_socket == network.clients[i].client_socket)
 					{
-						max_socket = network.socket;
+						max_socket = network.socket_tcp;
 						for (uint8_t j = 0; j<network.count_clients; j++)
 						{
 							if (j == i) 
 							{
-								max_socket = MAX_VALUE(max_socket,network.socket);
+								max_socket = MAX_VALUE(max_socket,network.socket_tcp);
 								continue;
 							}
 							max_socket = MAX_VALUE(max_socket,network.clients[j].client_socket);

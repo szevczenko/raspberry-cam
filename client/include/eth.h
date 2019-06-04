@@ -14,8 +14,8 @@
  *    Allan Stockdill-Mander - initial API and implementation and/or initial documentation
  *******************************************************************************/
 
-#if !defined(__MQTT_LINUX_)
-#define __MQTT_LINUX_
+#if !defined(___LINUX_)
+#define ___LINUX_
 
 #if defined(WIN32_DLL) || defined(WIN64_DLL)
   #define DLLImport __declspec(dllimport)
@@ -60,12 +60,18 @@ int TimerLeftMS(Timer*);
 typedef struct Network
 {
 	int my_socket;
-	int (*mqttread) (struct Network*, unsigned char*, int, int);
-	int (*mqttwrite) (struct Network*, unsigned char*, int, int);
+  int my_socket_udp;
+  struct sockaddr_in servaddr_udp;
+	int (*read_tcp) (struct Network*, unsigned char*, int, int);
+	int (*write_tcp) (struct Network*, unsigned char*, int, int);
+  int (*read_udp )  (struct Network* n, unsigned char* buffer, int len, int *addr_len);
+  int (*write_udp) (struct Network* n, unsigned char* buffer, int len);
 } Network;
 
-int linux_read(Network*, unsigned char*, int, int);
-int linux_write(Network*, unsigned char*, int, int);
+int linux_read_tcp(Network*, unsigned char*, int, int);
+int linux_write_tcp(Network*, unsigned char*, int, int);
+int linux_read_udp(Network* n, unsigned char* buffer, int len, int *addr_len);
+int linux_write_udp(Network* n, unsigned char* buffer, int len);
 
 DLLExport void NetworkInit(Network*);
 DLLExport int NetworkConnect(Network*, char*, int);

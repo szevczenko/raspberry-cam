@@ -14,4 +14,6 @@
 #define MAX_VALUE(VAL1,VAL2) (VAL1 >= VAL2)?VAL1:VAL2
 #define delay_ms(ms)        usleep(ms*1000)
 #define DEBUGF printf
+
+#define CONFIG_PLATFORM_LINUX 1
 #endif

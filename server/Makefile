@@ -11,9 +11,12 @@ INC_DIRS := $(shell find $(SRC_DIRS) -type d)\
 			include
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-CPPFLAGS ?= $(INC_FLAGS) -MMD -MP 
+CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -g
 
-LIBS ?= -lpthread -lwiringPi
+LIBS ?= -lpthread 
+
+LDFLAGS = -g
+#-lwiringPi
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CC) $(OBJS) $(LIBS) -o $@ $(LDFLAGS)

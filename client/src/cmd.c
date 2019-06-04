@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <stdio.h> 
 #include <unistd.h> // daemon, close
-#include "MQTTLinux.h"
+#include "eth.h"
 
 void * keyboard_thd(void * network)
 {
@@ -15,7 +15,7 @@ void * keyboard_thd(void * network)
     const char *dev = "/dev/input/by-path/platform-i8042-serio-0-event-kbd";
     int fd;
     uint8_t buff[16];
-    char readBuff[16];
+    char read_tcpBuff[16];
     fd = open(dev, O_RDONLY); // Open the buffer
     printf("errno (%s)\n",strerror(errno) );
         if (fd == -1) return NULL;
@@ -24,32 +24,22 @@ void * keyboard_thd(void * network)
     ssize_t n;
     uint8_t key_value = 0;
 
-    connection->mqttwrite(connection,"test\n",5,100);
-    connection->mqttwrite(connection,"test2\n",5,100);
-        // Our keylogger need to read every keystroke, so we will need to loop until break
     while (1) {
-    n = read(fd, &ev, sizeof ev); // Read from the buffer
+    n = read(fd, &ev, sizeof ev); // read_tcp from the buffer
     
     if (ev.type == EV_KEY)
     {
-        //printf("type = %d code = %d value = %d\n", ev.type, ev.code, ev.value);
         buff[1] = direction_parse(&ev.value, &ev.code, &key_value);
         if(buff[1] < 255) // function can return -1
         {
             buff[0] = CMD_GO;
-            connection->mqttwrite(connection,buff,2,100);
-            //connection->mqttread(connection,buff,5,100);
-
-            printf("send %d %d\n", buff[0], buff[1]);
+            connection->write_tcp(connection,buff,2,100);
+            connection->write_udp(connection,"Hello", 5); //test
         }
     }
-        
- 
-    // Since we want a safe way to kill the loop safely (closing the stream and all)
+
     if (ev.code == KEY_ESC) break;
-    // As you see, we can use key defs from input-event-codes.h
     }
-    // And don't forget to close the buffer and exit safely
     close(fd);
     fflush(stdout);
 }

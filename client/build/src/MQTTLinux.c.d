@@ -1,3 +1,3 @@
-build/./src/MQTTLinux.c.o: src/MQTTLinux.c include/MQTTLinux.h
+build/./src/MQTTLinux.c.o: src/MQTTLinux.c include/eth.h
 
-include/MQTTLinux.h:
+include/eth.h:

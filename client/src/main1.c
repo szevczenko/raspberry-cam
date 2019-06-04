@@ -1,6 +1,7 @@
 
+#if 0
 // Client side implementation of UDP client-server model 
-#include "MQTTLinux.h"
+#include "eth.h"
 #include "linux/input.h"
 #include <limits.h>
 #include <pthread.h>
@@ -75,5 +76,5 @@ int main() {
 
     return 0;
 } 
-
+#endif
 /////////////////////////////////////////////////////////////////////////////

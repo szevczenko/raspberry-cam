@@ -11,14 +11,20 @@ INC_DIRS := $(shell find $(SRC_DIRS) -type d)\
 			include
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-CPPFLAGS ?=  $(INC_FLAGS) -MMD -MP 
+CPPFLAGS ?=  $(INC_FLAGS) -MMD -MP -g
+
+OPENCV = `pkg-config opencv --cflags --libs`
 
 LIBS ?= -lpthread  
+
+LIB_PATH += -L/usr/local/lib
+
+LIBS_CPP = $(LIBS) $(OPENCV)
 
 
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	$(CC) $(OBJS) $(LIBS) -o $@ $(LDFLAGS)
+	$(CXX) $(OBJS) $(LIBS) $(LIBS_CPP)  -o $@ $(LDFLAGS) 
 
 # assembly
 $(BUILD_DIR)/%.s.o: %.s
@@ -33,13 +39,16 @@ $(BUILD_DIR)/%.c.o: %.c
 # c++ source
 $(BUILD_DIR)/%.cpp.o: %.cpp
 	$(MKDIR_P) $(dir $@)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< $(LIBS) -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< $(LIBS_CPP) $(LIB_PATH) -o $@
 
 
 .PHONY: clean
 
 clean:
 	$(RM) -r $(BUILD_DIR)
+
+echo: 
+	echo $(LIBS_CPP)
 
 -include $(DEPS)
 

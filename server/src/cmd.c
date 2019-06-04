@@ -2,20 +2,25 @@
 #include "stdio.h"
 #include "string.h"
 #include <stdint.h>
+#include <config.h>
+
+#if !CONFIG_PLATFORM_LINUX
 #include <wiringPi.h>
 #include <softPwm.h>
-#include <config.h>
+#endif
+
 #include <semaphore.h>
 #include <stdlib.h>
 #include "motor_pwm.h"
 
-#define DEBUG_CMD 
+#define DEBUG_CMD printf
 
 static int pwm_parse1, pwm_parse2;
 
 int parse_cmd(uint8_t * buffer, uint8_t len)
 {
     int rv = 0;
+    #if !CONFIG_PLATFORM_LINUX
     if (buffer[0]==CMD_GO)
     {
         switch(buffer[1])
@@ -72,16 +77,19 @@ int parse_cmd(uint8_t * buffer, uint8_t len)
         }
         DEBUG_CMD("\n");
     }
+    #else
+    DEBUG_CMD("receive %d %d \n", buffer[0], buffer[1]);
+    #endif //#if !CONFIG_PLATFORM_LINUX
+    if (0);
     else rv = -1;
-    //c_buff->buff_len-= len_cmd;
-    //memcpy(c_buff->buffer, &c_buff->buffer[c_buff->LenToDo[c_buff->pos]],c_buff->LenToDo[c_buff->pos]);
-    //c_buff->pos++;
+    #if !CONFIG_PLATFORM_LINUX
     if (rv>-1)  sem_post (&sem_go);
+    #endif //#if !CONFIG_PLATFORM_LINUX
     return rv;
     
 }
 
-
+#if !CONFIG_PLATFORM_LINUX
 void * go_cmd_thd(void * pv)
 {
     DEBUG_CMD("thd go_cmd start\n");
@@ -92,4 +100,4 @@ void * go_cmd_thd(void * pv)
     }
     
 }
-
+#endif

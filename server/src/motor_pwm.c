@@ -2,9 +2,12 @@
 #include "stdio.h"
 #include "string.h"
 #include <stdint.h>
+#include <config.h>
+
+#if !CONFIG_PLATFORM_LINUX
+
 #include <wiringPi.h>
 #include <softPwm.h>
-#include <config.h>
 #include <stdlib.h>
 #include <motor_pwm.h>
 
@@ -256,3 +259,5 @@ int do_toDo2(void)
     }
     return 0;
 }
+
+#endif

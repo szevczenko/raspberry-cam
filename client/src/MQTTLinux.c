@@ -12,10 +12,10 @@
  *
  * Contributors:
  *    Allan Stockdill-Mander - initial API and implementation and/or initial documentation
- *    Ian Craggs - return codes from linux_read
+ *    Ian Craggs - return codes from linux_read_tcp
  *******************************************************************************/
 
-#include "MQTTLinux.h"
+#include "eth.h"
 
 void TimerInit(Timer* timer)
 {
@@ -59,7 +59,7 @@ int TimerLeftMS(Timer* timer)
 }
 
 
-int linux_read(Network* n, unsigned char* buffer, int len, int timeout_ms)
+int linux_read_tcp(Network* n, unsigned char* buffer, int len, int timeout_ms)
 {
 	struct timeval interval = {timeout_ms / 1000, (timeout_ms % 1000) * 1000};
 	if (interval.tv_sec < 0 || (interval.tv_sec == 0 && interval.tv_usec <= 0))
@@ -91,8 +91,15 @@ int linux_read(Network* n, unsigned char* buffer, int len, int timeout_ms)
 	return bytes;
 }
 
+int linux_read_udp(Network* n, unsigned char* buffer, int len, int *addr_len)
+{
+	int bytes;
+	bytes = recvfrom(n->my_socket_udp, (char*)buffer, len, 0, (struct sockaddr*)&n->servaddr_udp, addr_len); 
+	return bytes;
+}
 
-int linux_write(Network* n, unsigned char* buffer, int len, int timeout_ms)
+
+int linux_write_tcp(Network* n, unsigned char* buffer, int len, int timeout_ms)
 {
 	struct timeval tv;
 
@@ -104,12 +111,21 @@ int linux_write(Network* n, unsigned char* buffer, int len, int timeout_ms)
 	return rc;
 }
 
+int linux_write_udp(Network* n, unsigned char* buffer, int len)
+{
+	int rc = -1;
+	rc = sendto(n->my_socket_udp, (const char*)buffer, len, 0, (const struct sockaddr*)&n->servaddr_udp, sizeof(n->servaddr_udp)); 
+	return rc;
+}
 
 void NetworkInit(Network* n)
 {
 	n->my_socket = 0;
-	n->mqttread = linux_read;
-	n->mqttwrite = linux_write;
+	n->my_socket_udp = 0;
+	n->read_tcp = linux_read_tcp;
+	n->write_tcp = linux_write_tcp;
+	n->read_udp = linux_read_udp;
+	n->write_udp = linux_write_udp;
 }
 
 
@@ -164,6 +180,18 @@ int NetworkConnect(Network* n, char* addr, int port)
 		else
 			rc = -1;
 	}
+
+	if ((n->my_socket_udp = socket(AF_INET, SOCK_DGRAM, 0)) < 0) { 
+        printf("socket creation failed"); 
+        exit(-1); 
+    } 
+
+	memset(&n->servaddr_udp, 0, sizeof(n->servaddr_udp)); 
+  
+    // Filling server information 
+    n->servaddr_udp.sin_family = AF_INET; 
+    n->servaddr_udp.sin_port = htons(port + 1); 
+    n->servaddr_udp.sin_addr.s_addr = inet_addr(addr); 
 
 	return rc;
 }

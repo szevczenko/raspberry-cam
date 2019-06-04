@@ -1,5 +1,5 @@
-build/./src/cmd.c.o: src/cmd.c include/cmd.h include/MQTTLinux.h
+build/./src/cmd.c.o: src/cmd.c include/cmd.h include/eth.h
 
 include/cmd.h:
 
-include/MQTTLinux.h:
+include/eth.h:

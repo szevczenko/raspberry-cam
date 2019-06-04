@@ -41,13 +41,13 @@ struct circular_buff
 
 struct server_network
 {
-    int socket;
+    int socket_tcp;
+    int socket_udp;
     int count_clients;
-    //struct circular_buff * c_buffer;
     uint8_t * buffer;
-    struct sockaddr_in servaddr; 
-    struct client_network * clients;
-    
+    struct sockaddr_in servaddr;
+    struct sockaddr_in servaddr_udp;  
+    struct client_network * clients;  
 };
 
 extern struct server_network network;
