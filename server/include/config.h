@@ -15,5 +15,10 @@
 #define delay_ms(ms)        usleep(ms*1000)
 #define DEBUGF printf
 
+/////////////////////////////////////////////////
+//camera
+#define CAM_WIDTH 320
+#define CAM_HEIGHT 240
+
 #define CONFIG_PLATFORM_LINUX 1
 #endif

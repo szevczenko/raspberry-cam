@@ -11,7 +11,9 @@
 #include <arpa/inet.h> 
 #include <netinet/in.h> 
 #include <errno.h>
+#ifndef __USE_UNIX98
 #define __USE_UNIX98
+#endif
 #include <pthread.h>
 
 #define NUMBER_CLIENT 5
@@ -56,8 +58,8 @@ int init_client(void);
 void * listen_client(void * pv);
 void * doTelnet(void * pv);
 
-pthread_mutex_t mutex_client;
-pthread_mutexattr_t mutexattr;
+extern pthread_mutex_t mutex_client;
+extern pthread_mutexattr_t mutexattr;
 
 
 #endif

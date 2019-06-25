@@ -16,6 +16,7 @@
  *******************************************************************************/
 
 #include "eth.h"
+#include <errno.h>
 
 void TimerInit(Timer* timer)
 {
@@ -94,7 +95,7 @@ int linux_read_tcp(Network* n, unsigned char* buffer, int len, int timeout_ms)
 int linux_read_udp(Network* n, unsigned char* buffer, int len, int *addr_len)
 {
 	int bytes;
-	bytes = recvfrom(n->my_socket_udp, (char*)buffer, len, 0, (struct sockaddr*)&n->servaddr_udp, addr_len); 
+	bytes = recvfrom(n->my_socket_udp, (char*)buffer, len, MSG_CONFIRM, (struct sockaddr*)&n->servaddr_udp, addr_len); 
 	return bytes;
 }
 

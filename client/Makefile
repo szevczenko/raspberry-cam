@@ -24,7 +24,7 @@ LIBS_CPP = $(LIBS) $(OPENCV)
 
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	$(CXX) $(OBJS) $(LIBS) $(LIBS_CPP)  -o $@ $(LDFLAGS) 
+	g++ $(OBJS) $(LIBS) $(LIBS_CPP)  -o $@ $(LDFLAGS) 
 
 # assembly
 $(BUILD_DIR)/%.s.o: %.s

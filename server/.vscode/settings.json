@@ -2,6 +2,7 @@
     "files.associations": {
         "limits.h": "c",
         "climits": "c",
-        "config.h": "c"
+        "config.h": "c",
+        "thread": "cpp"
     }
 }

@@ -6,9 +6,8 @@ extern "C"
 #include "linux/input.h"
 #include <limits.h>
 #include <pthread.h>
-
-#include "cmd.h"
 }
+#include "cmd.hpp"
 #include "video_s.hpp"
 
 using namespace std;
@@ -23,6 +22,7 @@ using namespace std;
 
 pthread_mutex_t mutex_client;
 pthread_mutexattr_t mutexattr;
+video_streaming_c *v_Stream_p;
 
 Network scon;
 
@@ -33,12 +33,12 @@ int main() {
     ret = NetworkConnect(&scon,(char*)SERVER_ADR,PORT);
     if (ret != MSG_OK)
     {
-        printf("NetworkConnect error\r\n");
+        printf("NetworkConnect: error\r\n");
         //return MSG_ERROR;
     }
 
 
-	pthread_t	keyboard, com;
+	pthread_t	keyboard, read_cmd, receive_img;
 	pthread_attr_t	attr;
 	size_t size = PTHREAD_STACK_MIN;
 	
@@ -47,17 +47,21 @@ int main() {
 	pthread_mutex_init(&mutex_client, &mutexattr);
 	errno = pthread_attr_init(&attr);
 	printf("size = %lu\n",size);
-	if (errno) {
+ 	if (errno) {
 		perror("pthread_attr_init");
 		return EXIT_FAILURE;
 	}
 	pthread_attr_getstacksize(&attr, &size);
 	pthread_create(&keyboard, &attr, keyboard_thd, (void *)&scon);
-	//pthread_create(&com, &attr, doTelnet, NULL);
-	video_streaming_c videoStream(320, 240);
+	pthread_create(&read_cmd, &attr, read_cmd_thd, (void *)&scon);
+	video_streaming_c videoStream;
+	v_Stream_p = &videoStream;
+	pthread_create(&receive_img, &attr, receive_img_thd, (void *)&scon);
+	video_receive_thd(v_Stream_p);
 	videoStream.wait_end();
 	pthread_join(keyboard, NULL);
-	//pthread_join(com, NULL);
+	pthread_join(receive_img, NULL);
+	pthread_join(read_cmd, NULL);
 	pthread_attr_destroy(&attr);
 
     return 0;

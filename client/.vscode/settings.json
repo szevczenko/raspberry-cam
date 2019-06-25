@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "input.h": "c",
-        "type_traits": "c"
+        "type_traits": "c",
+        "new": "cpp"
     }
 }

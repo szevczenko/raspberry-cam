@@ -1,5 +1,6 @@
-#include "thd.h"
-#include "cmd.h"
+#include "thd.hpp"
+#include "cmd.hpp"
+#include "video_s.hpp"
 
 #define MAX_VALUE(OLD_V, NEW_VAL) NEW_VAL>OLD_V?NEW_VAL:OLD_V
 
@@ -7,6 +8,9 @@ uint8_t buffer_cmd[BUFFER_CMD];
 struct client_network n_clients[NUMBER_CLIENT];
 struct server_network network;
 uint16_t bufferToDo[32];
+
+pthread_mutex_t mutex_client;
+pthread_mutexattr_t mutexattr;
 
 int init_client(void)
 {	
@@ -47,6 +51,7 @@ int init_client(void)
     return MSG_OK;
 }
 
+extern video_streaming_c *vStreamObj_pnt;
 
 void * listen_client(void * pv)
 {
@@ -111,22 +116,28 @@ void * listen_client(void * pv)
 	    }
 		else if (FD_ISSET(network.socket_udp , &set) && rv>0)
 		{
-			//ssize_t len = read(network.clients[i].client_socket, (char *)buffer, sizeof(buffer));
-			len = recvfrom(network.socket_udp, (char *)buffer, MAXLINE,  0, 0,0); 
-			printf("UDP Receive: %s", buffer);
+			len = recvfrom(network.socket_udp, (char *)buffer, MAXLINE,  MSG_WAITALL, ( struct sockaddr *) &vStreamObj_pnt->cliaddr,(unsigned int*) &vStreamObj_pnt->len_addr);
+			vStreamObj_pnt->socket = network.socket_udp;  
 		}
 		else if (rv>0)
 		{
 			for (i = 0; i<network.count_clients;i++) //recieve data from clients
         	{
 				if (!FD_ISSET( network.clients[i].client_socket , &set)) continue;
-  				ssize_t len = read(network.clients[i].client_socket, (char *)buffer, sizeof(buffer));
+  				int len = read(network.clients[i].client_socket, (char *)buffer, sizeof(buffer));
   				if (len < 0)
 				{		
 				  		printf("read sock %d i = %d error (%s)\n",network.clients[i].client_socket, i, strerror(errno));
   				}
 				if (len == 0)
 				{
+					if (vStreamObj_pnt->socket_tcp == network.clients[i].client_socket)
+					{
+						vStreamObj_pnt->socket_tcp = 0;
+						vStreamObj_pnt->state = VID_STOP_SEND;
+						memset(&vStreamObj_pnt->cliaddr, 0, sizeof(vStreamObj_pnt->cliaddr));
+						printf("ETH: Stop stream\n");
+					}
 					if (max_socket == network.clients[i].client_socket)
 					{
 						max_socket = network.socket_tcp;
@@ -153,14 +164,7 @@ void * listen_client(void * pv)
 				}
 				if (len>0)
 				{
-					//printf("recv: %s len = %ld\n", buffer, sizeof (char));
-					parse_cmd(buffer,len);
-					/*
-					memcpy(&network.c_buffer->buffer[network.c_buffer->buff_len],(uint8_t*)buffer,len);
-					network.c_buffer->buff_len+=len;
-					network.c_buffer->LenToDo[network.buffToDoPos] = len;
-					network.buffToDoPos++;
-					*/
+					parse_cmd(buffer,len, network.clients[i].client_socket);
 				}
         	} //end for
 		}//end if
@@ -168,27 +172,3 @@ void * listen_client(void * pv)
 		
 
 }
-/*
-void * doTelnet(void * pv)
-{
-	printf("do cmd start\n");
-	uint16_t cmd = 0;
-	while(1)
-	{
-		//printf("%s| len = %d\n",(char*)network.buffer, network.buff_len);
-		//for(uint8_t i = 0; i<network.buff_len; i++)
-		//	printf("%d",network.buffer[i]);
-		
-		if (network.buffLenToDo[cmd] != 0)
-		{
-			printf("todo cmd %d;%d, list %d\n",network.buffer[0],network.buffer[1],network.buffLenToDo[cmd]);
-			parse_cmd(network.buffer,network.buffLenToDo[cmd],&network.buff_len);
-			cmd++;
-		}
-		
-		
-		sleep(2);
-		
-	}
-} // doTelnet
-*/

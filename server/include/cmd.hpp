@@ -7,7 +7,7 @@
 #define KEY_RIGHT_POS 3
 
 #include <stdint.h>
-#include "thd.h"
+#include "thd.hpp"
 
 typedef enum
 {
@@ -26,9 +26,15 @@ typedef enum
 {
     CMD_GO = 0,
     CMD_UDP_IP,
+    CMD_UDP_CONFIRM,
+    CMD_START_IMG,
+    CMD_STOP_IMG,
+    CMD_CONFIG_IMAGE_BUFFOR,
+    CMD_ERROR
+
 }NET_CMD;
  
-int parse_cmd(uint8_t * buffer, uint8_t len);
+int parse_cmd(uint8_t * buffer, uint8_t len, int client_socket);
 
 void * go_cmd_thd(void * pv);
 

@@ -1,4 +1,4 @@
-#include "cmd.h"
+#include "cmd.hpp"
 #include "stdio.h"
 #include "string.h"
 #include <stdint.h>
@@ -11,15 +11,57 @@
 
 #include <semaphore.h>
 #include <stdlib.h>
-#include "motor_pwm.h"
+#include "motor_pwm.hpp"
+#include "video_s.hpp"
 
 #define DEBUG_CMD printf
 
-static int pwm_parse1, pwm_parse2;
+extern video_streaming_c *vStreamObj_pnt;
 
-int parse_cmd(uint8_t * buffer, uint8_t len)
+static int pwm_parse1, pwm_parse2;
+typedef struct
+{
+    char cmd;
+    uint16_t height;
+    uint16_t width;
+}cmd_img_t;
+
+static cmd_img_t buff_cmd_img;
+
+int parse_cmd(uint8_t * buffer, uint8_t len, int client_socket)
 {
     int rv = 0;
+    char buffer_to_send[8];
+    switch(buffer[0])
+    {
+        case CMD_UDP_IP:
+
+        break;
+        case CMD_START_IMG:
+        if (vStreamObj_pnt->cliaddr.sin_addr.s_addr != 0)
+        {
+            vStreamObj_pnt->state = VID_SEND_DATA;
+            vStreamObj_pnt->socket_tcp = client_socket;
+        }
+        else 
+        {
+            DEBUG_CMD("CMD: error CMD_START_IMG\n");
+            buffer_to_send[0] = CMD_ERROR;
+            buffer_to_send[1] = CMD_START_IMG;
+            write(client_socket, &buffer_to_send, 2);
+        }
+        break;
+        case CMD_STOP_IMG:
+            vStreamObj_pnt->state = VID_STOP_SEND;
+        break;
+        case CMD_CONFIG_IMAGE_BUFFOR:
+        DEBUG_CMD("CMD: send config image buffor\n");
+        buff_cmd_img.cmd = CMD_CONFIG_IMAGE_BUFFOR;
+        buff_cmd_img.height = CAM_HEIGHT;
+        buff_cmd_img.width = CAM_WIDTH;
+        write(client_socket, &buff_cmd_img, sizeof(buff_cmd_img));
+        break;
+    }
     #if !CONFIG_PLATFORM_LINUX
     if (buffer[0]==CMD_GO)
     {
@@ -76,15 +118,15 @@ int parse_cmd(uint8_t * buffer, uint8_t len)
             break; 
         }
         DEBUG_CMD("\n");
+        #if !CONFIG_PLATFORM_LINUX
+        if (rv>-1)  sem_post (&sem_go);
+        #endif //#if !CONFIG_PLATFORM_LINUX
     }
     #else
     DEBUG_CMD("receive %d %d \n", buffer[0], buffer[1]);
     #endif //#if !CONFIG_PLATFORM_LINUX
     if (0);
     else rv = -1;
-    #if !CONFIG_PLATFORM_LINUX
-    if (rv>-1)  sem_post (&sem_go);
-    #endif //#if !CONFIG_PLATFORM_LINUX
     return rv;
     
 }
