@@ -68,7 +68,7 @@ void * listen_client(void * pv)
     time_select.tv_usec = 10;
     FD_ZERO(&set); // clear the set 
 	 // add our file descriptor to the set
-	uint8_t buffer[1024];
+	uint8_t buffer[64];
 	printf("start listen sock = %d\n", network.socket_tcp); 
     while(1)
     {

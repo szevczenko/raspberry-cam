@@ -15,13 +15,16 @@ using namespace std;
 #define DEBUG_VIDEO printf
 #define PACKET_SIZE 1024
 
-video_streaming_c::video_streaming_c(void)
+sem_t sem_img_ready;
+
+video_streaming_c::video_streaming_c(int width, int height)
 {
-    buffor_size = C_WIDTH * C_HEIGHT;
+    buffor_size = width * height;
     data_len_send = PACKET_SIZE;
     buffor = new char[buffor_size];
     packet_count = buffor_size/(data_len_send - sizeof(packetUDP)) + 1;
     memset(&cliaddr, 0, sizeof(cliaddr));
+    sem_init(&sem_img_ready, 0, 0);
     //tets
     for (uint32_t i = 0; i<buffor_size; i++)
     {
@@ -44,8 +47,8 @@ static void video_thread(video_streaming_c * stream)
             sleep(1);
             continue;
         }
+        sem_wait (&sem_img_ready);
         header.packet_len = stream->data_len_send - sizeof(packetUDP);
-        //DEBUG_VIDEO("VIDEO: send packet UDP \n");
         for(uint32_t i = 0; i<stream->packet_count; i++)
         {
             header.number_packet = i;
@@ -60,12 +63,6 @@ static void video_thread(video_streaming_c * stream)
                 MSG_CONFIRM, (const struct sockaddr *) &stream->cliaddr, 
                     stream->len_addr);
         }
-        //test
-        for(uint32_t i = 0; i<stream->buffor_size; i++)
-        {
-            stream->buffor[i] = stream->buffor[i] + 25;
-        }
-        usleep(100000);
     }
      
 }

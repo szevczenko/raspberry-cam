@@ -9,7 +9,7 @@
 #include <wiringPi.h>
 #include <softPwm.h>
 #include <stdlib.h>
-#include <motor_pwm.h>
+#include <motor_pwm.hpp>
 
 struct motor_pwm command;
 sem_t sem_go;
@@ -78,7 +78,7 @@ void go_str(int pwm1, int pwm2)
     command.previos_pwm[0] = command.pwm[0]*sign1;
     if (pwm2<0 && command.pwm[1] >= 0) sign2 = -1;
     command.previos_pwm[1] = command.pwm[1]*sign2;
-    DEBUGF("return = %d, pwm = %d, sign1 = %d, pin = %d\n",command.previos_pwm[0], command.pwm[0], sign1, command.pin_pwm1);
+    //DEBUGF("return = %d, pwm = %d, sign1 = %d, pin = %d\n",command.previos_pwm[0], command.pwm[0], sign1, command.pin_pwm1);
     //command.previos_pwm[1] = command.pwm[1];
 }
 

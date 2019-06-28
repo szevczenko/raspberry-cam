@@ -17,8 +17,10 @@
 
 /////////////////////////////////////////////////
 //camera
-#define CAM_WIDTH 320
-#define CAM_HEIGHT 240
+#define CAM_WIDTH 480
+#define CAM_HEIGHT 300
 
-#define CONFIG_PLATFORM_LINUX 1
+#define CONFIG_USE_WINDOW 1
+
+#define CONFIG_PLATFORM_LINUX 0
 #endif

@@ -4,6 +4,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
+#include "camera.hpp"
 #include <string.h> 
 #include <sys/types.h> 
 #include <sys/socket.h>
@@ -11,6 +12,7 @@
 #include <arpa/inet.h> 
 #include <netinet/in.h> 
 #include <thread> 
+#include <semaphore.h>
 
 using namespace std;
 using namespace cv;
@@ -33,7 +35,7 @@ typedef enum
 
 class video_streaming_c {
   public:
-  video_streaming_c(void);
+  video_streaming_c(int, int);
   ~video_streaming_c(void);
   vidStateEn state;
   int socket;
@@ -54,5 +56,6 @@ class video_streaming_c {
   
 };
 
+extern sem_t sem_img_ready;
 
 #endif

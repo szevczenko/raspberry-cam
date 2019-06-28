@@ -9,10 +9,11 @@ extern "C"{
 #include "video_s.hpp"
 #include "cmd.hpp"
 #include "motor_pwm.hpp"
+#include "camera.hpp"
 #define test_errno(msg) do{if (errno) {perror(msg); exit(EXIT_FAILURE);}} while(0)
 
-
 video_streaming_c *vStreamObj_pnt;
+piCamera * obCamPnt;
 // Driver code 
 int main() { 
 	int ret = MSG_ERROR;
@@ -37,10 +38,14 @@ int main() {
 	#if !CONFIG_PLATFORM_LINUX
 	pthread_create(&com, &attr, go_cmd_thd, NULL);
 	#endif
-	video_streaming_c vStreamObj;
+	video_streaming_c vStreamObj(CAM_WIDTH, CAM_HEIGHT);
 	vStreamObj_pnt = &vStreamObj;
-	vStreamObj.start_process();
+	piCamera obCamera;
+	obCamPnt = &obCamera;
+	obCamera.init(CAM_WIDTH, CAM_HEIGHT, (unsigned char*)vStreamObj.buffor, CAM_STREAM);
 
+	vStreamObj.start_process();
+	obCamera.process();
 	vStreamObj.wait_to_end();
 	pthread_join(listen, NULL);
 	#if !CONFIG_PLATFORM_LINUX

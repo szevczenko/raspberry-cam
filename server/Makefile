@@ -8,14 +8,18 @@ OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 
 INC_DIRS := $(shell find $(SRC_DIRS) -type d)\
-			include
+			include \
+			/usr/local/include
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 CPPFLAGS ?=  $(INC_FLAGS) -MMD -MP -g
 
 OPENCV = `pkg-config opencv --cflags --libs`
 
-LIBS ?= -lpthread  
+
+RASPICAM_PATH = -Lusr/local/lib
+
+LIBS ?= -lpthread  -lraspicam -lwiringPi
 
 LIB_PATH += -L/usr/local/lib
 
@@ -48,7 +52,7 @@ clean:
 	$(RM) -r $(BUILD_DIR)
 
 echo: 
-	echo $(LIBS_CPP)
+	echo $(RASPICAM)
 
 -include $(DEPS)
 
