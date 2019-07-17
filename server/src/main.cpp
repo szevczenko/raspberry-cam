@@ -42,8 +42,8 @@ int main() {
 	vStreamObj_pnt = &vStreamObj;
 	piCamera obCamera;
 	obCamPnt = &obCamera;
-	obCamera.init(CAM_WIDTH, CAM_HEIGHT, (unsigned char*)vStreamObj.buffor, CAM_STREAM);
-
+	obCamera.init(CAM_WIDTH, CAM_HEIGHT, 0, CAM_LOCALIZATION); //(unsigned char*)vStreamObj.buffor
+	obCamera.startCam();
 	vStreamObj.start_process();
 	obCamera.process();
 	vStreamObj.wait_to_end();

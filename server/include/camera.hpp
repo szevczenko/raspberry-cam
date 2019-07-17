@@ -3,6 +3,7 @@
 #include <raspicam/raspicam.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include "config.h"
 using namespace std;
 using namespace cv;
 using namespace raspicam;
@@ -19,11 +20,14 @@ class piCamera
     RaspiCam Camera; //Cmaera object
     #if CONFIG_USE_WINDOW
     Mat color_img;
-    Mat grey_img;
+    Mat grey_img, post_process_img;
     #endif
-    unsigned char * color_data, *grey_data;
+    unsigned char * color_data, *grey_data, *post_process_data;
     int cam_width, cam_height, img_size;
+    unsigned char *data_mat[CAM_HEIGHT]; //data_mat[row][col]
+    unsigned char mem_pix[CAM_HEIGHT][CAM_WIDTH];
     void process(void);
+    void find_object(void);
 };
 
 typedef enum
