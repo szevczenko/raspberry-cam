@@ -25,6 +25,7 @@ video_streaming_c::video_streaming_c(int width, int height)
     packet_count = buffor_size/(data_len_send - sizeof(packetUDP)) + 1;
     memset(&cliaddr, 0, sizeof(cliaddr));
     sem_init(&sem_img_ready, 0, 0);
+    DEBUG_VIDEO("STREAM: stream init\n");
     //tets
     for (uint32_t i = 0; i<buffor_size; i++)
     {

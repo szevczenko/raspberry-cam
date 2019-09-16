@@ -36,10 +36,10 @@ int parse_cmd(uint8_t * buffer, uint8_t len, int client_socket)
     switch(buffer[0])
     {
         case CMD_START_LOCALIZATION:
-            if (obCamPnt->type != CAM_LOCALIZATION)
+            if (obCamPnt->type != CAM_AUTO_DRIVE)
             {
                 obCamPnt->deinit();
-                obCamPnt->init(600, 600, 0, CAM_LOCALIZATION);
+                obCamPnt->init(CAM_WIDTH, CAM_HEIGHT, 0, CAM_AUTO_DRIVE);
             }
             obCamPnt->startCam();
         break;
@@ -55,6 +55,10 @@ int parse_cmd(uint8_t * buffer, uint8_t len, int client_socket)
             {
                 obCamPnt->deinit();
                 obCamPnt->init(CAM_WIDTH, CAM_HEIGHT, (unsigned char *)vStreamObj_pnt->buffor, CAM_STREAM);
+            }
+            else
+            {
+                DEBUG_CMD("CMD: camera start without init\n");
             }
             obCamPnt->startCam();
             if (vStreamObj_pnt->cliaddr.sin_addr.s_addr != 0)

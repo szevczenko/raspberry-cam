@@ -42,8 +42,10 @@ typedef enum
 
 typedef enum
 {
+    CAM_NO_PROCESS,
     CAM_STREAM,
     CAM_LOCALIZATION,
+    CAM_AUTO_DRIVE
     
 }enCamDo;
 
