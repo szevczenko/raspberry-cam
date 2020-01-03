@@ -1,5 +1,5 @@
 
-// Server side implementation of UDP client-server model 
+// Server side implementation of UDP client-server model
 extern "C"{
 
 #include <limits.h>
@@ -10,12 +10,14 @@ extern "C"{
 #include "cmd.hpp"
 #include "motor_pwm.hpp"
 #include "camera.hpp"
+#include "robot_param.hpp"
+
 #define test_errno(msg) do{if (errno) {perror(msg); exit(EXIT_FAILURE);}} while(0)
 
 video_streaming_c *vStreamObj_pnt;
 piCamera * obCamPnt;
-// Driver code 
-int main() { 
+// Driver code
+int main() {
 	int ret = MSG_ERROR;
 	pthread_t	listen, com;
 	pthread_attr_t	attr;
@@ -23,6 +25,8 @@ int main() {
 	#if !CONFIG_PLATFORM_LINUX
 	init_pwm();
 	#endif
+	test_robot();
+	rp_init();
 	pthread_mutexattr_init(&mutexattr);
 	pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
 	pthread_mutex_init(&mutex_client, &mutexattr);
@@ -42,6 +46,9 @@ int main() {
 	vStreamObj_pnt = &vStreamObj;
 	piCamera obCamera;
 	obCamPnt = &obCamera;
+	v_analyse_init_find_process();
+	start_find_process(&attr, obCamPnt);
+	start_find_process(&attr);
 	//obCamera.init(CAM_WIDTH, CAM_HEIGHT, (unsigned char*)vStreamObj.buffor, CAM_STREAM);
 	//obCamera.init(CAM_WIDTH, CAM_HEIGHT, 0, CAM_AUTO_DRIVE); //(unsigned char*)vStreamObj.buffor
 	//obCamera.startCam();
@@ -49,10 +56,12 @@ int main() {
 	obCamera.process();
 	vStreamObj.wait_to_end();
 	pthread_join(listen, NULL);
+	wait_to_end_rp_loc();
+	wait_to_end_find();
 	#if !CONFIG_PLATFORM_LINUX
 	pthread_join(com, NULL);
 	#endif
 	pthread_attr_destroy(&attr);
-	      
-    return 0; 
-} 
+
+    return 0;
+}

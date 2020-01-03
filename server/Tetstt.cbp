@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Tetstt" />
+		<Option makefile_is_custom="1" />
+		<Option execution_dir="../Tetstt" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="build/a" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<MakeCommands>
+					<Build command="$make -j" />
+					<CompileFile command="$make -j" />
+					<Clean command="$make -j clean" />
+					<DistClean command="$make -f $makefile distclean$target" />
+					<AskRebuildNeeded command="$make -j" />
+					<SilentBuild command="$make -j &gt; $(CMD_NULL)" />
+				</MakeCommands>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/Tetstt" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+		<Unit filename="build/src/camera.cpp.d" />
+		<Unit filename="build/src/cmd.cpp.d" />
+		<Unit filename="build/src/ethernet.c.d" />
+		<Unit filename="build/src/location.cpp.d" />
+		<Unit filename="build/src/main.cpp.d" />
+		<Unit filename="build/src/motor_pwm.cpp.d" />
+		<Unit filename="build/src/robot_param.cpp.d" />
+		<Unit filename="build/src/thd.cpp.d" />
+		<Unit filename="build/src/v_analyse.cpp.d" />
+		<Unit filename="build/src/video_s.cpp.d" />
+		<Unit filename="include/camera.hpp" />
+		<Unit filename="include/cmd.hpp" />
+		<Unit filename="include/config.h" />
+		<Unit filename="include/define.h" />
+		<Unit filename="include/ethernet.h" />
+		<Unit filename="include/location.hpp" />
+		<Unit filename="include/motor_pwm.hpp" />
+		<Unit filename="include/robot_param.hpp" />
+		<Unit filename="include/thd.hpp" />
+		<Unit filename="include/v_analyse.hpp" />
+		<Unit filename="include/video_s.hpp" />
+		<Unit filename="src/camera.cpp" />
+		<Unit filename="src/cmd.cpp" />
+		<Unit filename="src/ethernet.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="src/location.cpp" />
+		<Unit filename="src/main.cpp" />
+		<Unit filename="src/motor_pwm.cpp" />
+		<Unit filename="src/robot_param.cpp" />
+		<Unit filename="src/thd.cpp" />
+		<Unit filename="src/v_analyse.cpp" />
+		<Unit filename="src/video_s.cpp" />
+		<Extensions>
+			<code_completion />
+			<debugger>
+				<search_path add="/home/pi/project/raspberry-cam/server/" />
+				<search_path add="src" />
+				<search_path add="include" />
+			</debugger>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

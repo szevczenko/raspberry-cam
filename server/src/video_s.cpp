@@ -36,7 +36,7 @@ video_streaming_c::~video_streaming_c(void)
 {
     delete buffor;
 }
-
+static uint32_t test_counter;
 static void video_thread(video_streaming_c * stream)
 {
     char packet[PACKET_SIZE];
@@ -61,9 +61,11 @@ static void video_thread(video_streaming_c * stream)
             memcpy(packet, &header, sizeof(header));
             memcpy(&packet[sizeof(header) - 1], &stream->buffor[i*(stream->data_len_send - sizeof(packetUDP))], header.packet_len);
             sendto(stream->socket, packet, stream->data_len_send,  
-                MSG_CONFIRM, (const struct sockaddr *) &stream->cliaddr, 
+                MSG_DONTWAIT, (const struct sockaddr *) &stream->cliaddr, 
                     stream->len_addr);
         }
+        DEBUG_VIDEO("VIDEO: Test counter %d\n", test_counter++);
+        usleep(5000);
     }
      
 }

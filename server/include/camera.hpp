@@ -26,8 +26,13 @@ class piCamera
     int cam_width, cam_height, img_size;
     unsigned char *data_mat[CAM_HEIGHT]; //data_mat[row][col]
     unsigned char mem_pix[CAM_HEIGHT][CAM_WIDTH];
+
+    int socket_tcp; //for test who receive image
+
     void process(void);
     void find_object(void);
+    void find_motion_vector(void);
+    void send_position(void);
 };
 
 typedef enum
@@ -46,7 +51,11 @@ typedef enum
     CAM_STREAM,
     CAM_LOCALIZATION,
     CAM_AUTO_DRIVE
-    
+
 }enCamDo;
+
+void v_analyse_init_find_process(void);
+void start_find_process(pthread_attr_t	*attr, piCamera * cam_obj);
+void wait_to_end_find(void);
 
 #endif

@@ -168,6 +168,7 @@ void * listen_client(void * pv)
 				}
         	} //end for
 		}//end if
+		delay_ms(10);
     }// end while
 		
 

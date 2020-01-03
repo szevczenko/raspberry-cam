@@ -32,12 +32,16 @@ typedef enum
     CMD_CONFIG_IMAGE_BUFFOR,
     CMD_START_LOCALIZATION,
     CMD_STOP_LOCALIZATION,
+    CMD_START_LOC_DRIVE,
+    CMD_STOP_LOC_DRIVE,
+    CMD_POSITION_DATA,
     CMD_ERROR
 
 }NET_CMD;
  
 int parse_cmd(uint8_t * buffer, uint8_t len, int client_socket);
-
+int parse_cmd_go(uint8_t cmd);
+int cmd_go_get_state(void);
 void * go_cmd_thd(void * pv);
 
 
