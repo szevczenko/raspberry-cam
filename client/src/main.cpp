@@ -18,11 +18,12 @@ using namespace std;
 
 #define PORT     8080 
 #define MAXLINE 1024 
-#define SERVER_ADR "127.0.0.1"
+#define SERVER_ADR "192.168.1.2"
 
 pthread_mutex_t mutex_client;
 pthread_mutexattr_t mutexattr;
 video_streaming_c *v_Stream_p;
+video_streaming_c videoStream;
 
 Network scon;
 
@@ -54,7 +55,7 @@ int main() {
 	pthread_attr_getstacksize(&attr, &size);
 	pthread_create(&keyboard, &attr, keyboard_thd, (void *)&scon);
 	pthread_create(&read_cmd, &attr, read_cmd_thd, (void *)&scon);
-	video_streaming_c videoStream;
+	videoStream;
 	v_Stream_p = &videoStream;
 	pthread_create(&receive_img, &attr, receive_img_thd, (void *)&scon);
 	video_receive_thd(v_Stream_p);

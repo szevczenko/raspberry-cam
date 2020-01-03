@@ -14,6 +14,13 @@ typedef enum
   VID_READY,
 }stateVideoS;
 
+typedef enum
+{
+  TYPE_VID_NONE,
+  TYPE_VID_CAMERA,
+  TYPE_VID_POSITION
+}typeVideo;
+
 class video_streaming_c {
   public:
   video_streaming_c(size_t, size_t);
@@ -26,6 +33,7 @@ class video_streaming_c {
   char *video_buff[2];
   int size_video_buff;
   int state;
+  int type;
   Mat img[2];
   size_t number_img;
   private:

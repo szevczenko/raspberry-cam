@@ -9,7 +9,10 @@
 #include <unistd.h> // daemon, close
 #include "eth.h"
 #include "video_s.hpp"
+#include "robot_param.hpp"
 #define DEBUG_CMD printf
+
+extern video_streaming_c *v_Stream_p;
 
 int cmdSendConfigBuffor(Network * connection)
 {
@@ -37,6 +40,15 @@ void * keyboard_thd(void * network)
     
     if (ev.type == EV_KEY)
     {   
+        buff[1] = (uint8_t) direction_parse((uint32_t*)(&ev.value), &ev.code, &key_value);
+        
+        if(buff[1] < 255) // function can return -1
+        {
+            buff[0] = CMD_GO;
+            connection->write_tcp(connection,buff,2,100);
+            if (buff[1] != 0)
+                continue;
+        }
         if (ev.value == 1)
         switch (ev.code)
         {
@@ -45,6 +57,23 @@ void * keyboard_thd(void * network)
             buff[0] = CMD_START_IMG;
             buff[1] = 255;
             connection->write_tcp(connection,buff,1,100);
+            v_Stream_p->type = TYPE_VID_CAMERA;
+            break;
+
+            case KEY_L:
+            DEBUG_CMD("CMD: send CMD_START_LOCALIZATION\n");
+            buff[0] = CMD_START_LOCALIZATION;
+            buff[1] = 255;
+            connection->write_tcp(connection,buff,1,100);
+            v_Stream_p->type = TYPE_VID_POSITION;
+            break;
+
+            case KEY_D:
+            DEBUG_CMD("CMD: send CMD_START_LOCALIZATION DRIVE\n");
+            buff[0] = CMD_START_LOC_DRIVE;
+            buff[1] = 255;
+            connection->write_tcp(connection,buff,1,100);
+            v_Stream_p->type = TYPE_VID_POSITION;
             break;
 
             case KEY_S:
@@ -62,15 +91,10 @@ void * keyboard_thd(void * network)
             connection->write_udp(connection,buff,1);
             break;
             default:
-            buff[1] = direction_parse((uint32_t*)(&ev.value), &ev.code, &key_value);
+            
             break;
         }
         
-        if(buff[1] < 255) // function can return -1
-        {
-            buff[0] = CMD_GO;
-            connection->write_tcp(connection,buff,2,100);
-        }
     }
 
     if (ev.code == KEY_ESC) break;
@@ -84,12 +108,12 @@ extern video_streaming_c *v_Stream_p;
 void * read_cmd_thd(void * network)
 {
     Network * connection = (Network *)network;
-    char read_tcpBuff[16];
+    char read_tcpBuff[256];
     int len = 0;
     cmd_img_t parameters_img;
     while(1)
     {
-        len = connection->read_tcp(connection, (unsigned char*)read_tcpBuff, sizeof(parameters_img) + 1, 100);
+        len = connection->read_tcp(connection, (unsigned char*)read_tcpBuff, sizeof(read_tcpBuff), 100);
         if (len > 0)
         {
             switch(read_tcpBuff[0])
@@ -97,6 +121,9 @@ void * read_cmd_thd(void * network)
                 case CMD_UDP_IP:
                 DEBUG_CMD("CMD_UDP_IP\n");
                 
+                break;
+                case CMD_POSITION_DATA:
+                robot_param_parse_data((uint8_t *)&read_tcpBuff[1], len - 1);
                 break;
                 case CMD_ERROR:
                 DEBUG_CMD("CMD_ERROR: %d\n",read_tcpBuff[1]);
@@ -129,6 +156,7 @@ void * read_cmd_thd(void * network)
 }
 #define RX_IMG_BUFF_LEN 1024
 unsigned char receive_buffor[RX_IMG_BUFF_LEN];
+int last_packet_number;
 void * receive_img_thd(void * network)
 {
     Network * connection = (Network *)network;
@@ -140,14 +168,17 @@ void * receive_img_thd(void * network)
         {
             if (connection->read_udp(connection, receive_buffor, RX_IMG_BUFF_LEN, &len_addr) > 0)
             {
-              
+                
                 memcpy(&v_Stream_p->video_buff[v_Stream_p->number_img%2][packet->number_packet*(RX_IMG_BUFF_LEN - sizeof(packetUDP))], 
                     &receive_buffor[sizeof(packetUDP) - 1], RX_IMG_BUFF_LEN - sizeof(packetUDP));
-                if (packet->number_packet == v_Stream_p->size_video_buff/(RX_IMG_BUFF_LEN - sizeof(packetUDP)))
+                //DEBUG_CMD("CMD: packet recieve %d \n", packet->number_packet);
+                if (packet->number_packet == v_Stream_p->size_video_buff/(RX_IMG_BUFF_LEN - sizeof(packetUDP)) ||
+                    last_packet_number > packet->number_packet)
                 {
-                    //DEBUG_CMD("CMD: read udp data %d \n", v_Stream_p->number_img%2);
+                    //DEBUG_CMD("CMD: read udp data %d \n", v_Stream_p->number_img);
                     v_Stream_p->show_image();
                 }
+                last_packet_number = packet->number_packet;
             }
             
         }
@@ -156,10 +187,10 @@ void * receive_img_thd(void * network)
 
 int direction_parse(uint32_t * ev_value, uint16_t * ev_code, uint8_t * key_value)
 {
-    //printf("code = %d value = %d\n", *ev_code, *ev_value);
+    //printf("code = %d value = %d\n", *ev_code, *key_value);
      if (*ev_value == 1) //value 0 == released; 1 == pressed; 2 == repeated
     {
-       // printf("Key %d has been pressed\n", ev.code); // up - 103, down - 108, left - 105, right 106.
+       //printf("Key %d has been pressed\n", *ev_code); // up - 103, down - 108, left - 105, right 106.
         switch(*ev_code)
         {
             case KEY_UP:
@@ -232,5 +263,5 @@ int direction_parse(uint32_t * ev_value, uint16_t * ev_code, uint8_t * key_value
             break; 
         }
     }
-    return -1;
+    return 255;
 }

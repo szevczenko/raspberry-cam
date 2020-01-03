@@ -6,6 +6,7 @@
 #include "unistd.h"
 #include "cmd.hpp"
 #include "eth.h"
+#include "robot_param.hpp"
 
 using namespace std;
 using namespace cv;
@@ -35,6 +36,7 @@ video_streaming_c::video_streaming_c(size_t width, size_t height)
 		    perror("pthread_attr_init");
 	    }
         state = VID_READY;
+        type = TYPE_VID_CAMERA;
 	    //pthread_attr_getstacksize(&attr, &size);
         //pthread_create(&video_s, &attr, video_receive_thd, (void *) this);//
     }
@@ -63,6 +65,7 @@ video_streaming_c::video_streaming_c(char * buff, char * buff2, size_t width, si
 		    perror("pthread_attr_init");
 	    }
         state = VID_READY;
+        type = TYPE_VID_CAMERA;
 	    //pthread_attr_getstacksize(&attr, &size);
         //pthread_create(&video_s, &attr, video_receive_thd, this);
     }
@@ -80,6 +83,7 @@ video_streaming_c::video_streaming_c(void)
 		    perror("pthread_attr_init");
 	    }
         state = VID_INIT;
+        type = TYPE_VID_CAMERA;
 	    //pthread_attr_getstacksize(&attr, &size);
         //pthread_create(&video_s, &attr, video_receive_thd, this);
     }
@@ -98,6 +102,7 @@ void video_streaming_c::video_init_buffer(size_t width_p, size_t height_p)
         img[0] = Mat(height, width, CV_8UC1, video_buff[0]);
         img[1] = Mat(height, width, CV_8UC1, video_buff[1]);
         state = VID_READY;
+        type = TYPE_VID_CAMERA;
     }
     
 }
@@ -131,11 +136,17 @@ void video_receive_thd(void * pv)
     DEBUG_VIDEO("VIDEO: start process \n");
     int ret_val = 0;
     size_t capture;
+    timespec timeout;
+    timeout.tv_nsec = 100000;
+    timeout.tv_sec = 0;
+    test_robot();
+    //v_stream->video_init_buffer(800, 600);
     while(1)
     {
-        if (v_stream->state == VID_READY)
+        if (v_stream->state == VID_READY && v_stream->type == TYPE_VID_CAMERA)
         {
-            sem_wait (&video_sem);
+            
+            if (sem_timedwait(&video_sem, &timeout) != 0) continue;
             capture = (v_stream->number_img - 1)%2;
             //DEBUG_VIDEO("VIDEO: Semaphore activated capture = %lu\n", capture);
             if(img[capture]->empty())
@@ -145,12 +156,19 @@ void video_receive_thd(void * pv)
             imshow("stream", *img[capture]);
             waitKey(5);
         }
-        else 
+        else if (v_stream->state != VID_READY && v_stream->type == TYPE_VID_CAMERA )
         {
             ret_val = cmdSendConfigBuffor(&scon);
             if (ret_val<0)  printf("VIDEO: send buff (%s)\n", strerror(errno));
             DEBUG_VIDEO("VIDEO: send msg config buffor. ret = %d \n", ret_val);
             sleep(1);
+        }
+        else if (v_stream->type == TYPE_VID_POSITION)
+        {
+            img[0]->setTo(Scalar(0));
+            config_visualization(img[0], &config_robot);
+            imshow("stream", *img[0]);
+            waitKey(100);
         }
         
     }
